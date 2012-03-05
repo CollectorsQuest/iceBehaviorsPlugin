@@ -9,8 +9,12 @@
  * @license    MIT License
  */
 
-$propel_dir = !empty($_SERVER['PROPEL_DIR']) ? $_SERVER['PROPEL_DIR'] : __DIR__ . '/../../../sfPropelORMPlugin/lib/vendor/propel/';
-$behavior_dir = file_exists(__DIR__ . '/../src/') ? __DIR__ . '/../src' : $propel_dir . '/generator/lib/behavior/extra_properties';
+$_SERVER['PROPEL_DIR'] = dirname(__FILE__) . '/../../../../plugins/sfPropelORMPlugin/lib/vendor/propel/';
+//$_SERVER['PROPEL_DIR'] = '/home/kevin/www/t-resa/plugins/sfPropelORMPlugin/lib/vendor/propel';
+$propel_dir = isset($_SERVER['PROPEL_DIR']) ? $_SERVER['PROPEL_DIR'] : dirname(__FILE__) . '/../../../../../plugins/sfPropelORMPlugin/lib/vendor/propel/';
+$behavior_dir = file_exists(__DIR__ . '/../src/')
+                    ? __DIR__ . '/../src'
+                    : $propel_dir . '/generator/lib/behavior/extra_properties';
 
 require_once $propel_dir . '/runtime/lib/Propel.php';
 require_once $propel_dir . '/generator/lib/util/PropelQuickBuilder.php';
@@ -231,6 +235,49 @@ EOF;
     $this->assertCount(0, $obj->getMyFirstPropertys());
   }
 
+  public function testQueryFilter()
+  {
+    ProductPeer::doDeleteAll();
+
+    $glass = new Product();
+    $glass->setName('Glass');
+    $glass->setProperty('fragile', true);
+    $glass->setProperty('color', 'white');
+    $glass->save();
+
+    $bottle = new Product();
+    $bottle->setName('Bottle');
+    $bottle->setProperty('fragile', true);
+    $bottle->setProperty('color', 'green');
+    $bottle->save();
+
+    $pan = new Product();
+    $pan->setName('Pan');
+    $pan->setProperty('fragile', false);
+    $pan->setProperty('color', 'black');
+    $pan->save();
+
+    $book = new Product();
+    $book->setName('Harry Potter');
+    $book->setProperty('num_pages', 280);
+    $book->setProperty('color', 'blue');
+    $book->save();
+
+
+    $count_all = ProductQuery::create()
+      ->count();
+    $count_fragile = ProductQuery::create()
+      ->filterByExtraProperty('fragile', true)
+      ->count();
+    $count_not_fragile = ProductQuery::create()
+      ->filterByExtraProperty('fragile', false)
+      ->count();
+
+    $this->assertSame(4, $count_all);
+    $this->assertSame(2, $count_fragile);
+    $this->assertSame(1, $count_not_fragile);
+  }
+
   public function testUseExistingPropertiesTable()
   {
     $user = new User();
@@ -273,5 +320,20 @@ EOF;
     $this->assertEquals('27.5m', $beagle->getProperty('length'));
     $this->assertCount(2, $beagle->getProductExtraPropertys());
   }
-}
 
+  public function testWithCustomConnection()
+  {
+    $obj = new ExtraPropertiesBehaviorTest1();
+    $con = Propel::getConnection();
+
+    $this->assertFalse($obj->hasProperty('foo', $con));
+    $this->assertEquals(0, $obj->countPropertiesByName('foo', $con));
+    $this->assertEquals(array(), $obj->deletePropertiesByName('foo', $con));
+    $this->assertNull($obj->getProperty('foo', null, $con));
+    $obj->setProperty('bar', 42, $con); // bar does not exist yet
+    $this->assertEquals(42, $obj->getProperty('bar', $con));
+    $obj->setProperty('bar', 24, $con); // bar should be updated
+    $this->assertEquals(24, $obj->getProperty('bar', $con));
+    $this->assertEquals(array(), $obj->getPropertiesByName('biz', array(), null, $con));
+  }
+}
