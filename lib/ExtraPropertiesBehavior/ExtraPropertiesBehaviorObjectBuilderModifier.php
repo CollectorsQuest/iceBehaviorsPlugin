@@ -12,7 +12,7 @@
  * @author Julien Muetton <julien_muetton@carpe-hora.com>
  * @package propel.generator.behavior.extra_properties
  */
-class PropelExtraPropertiesBehaviorObjectBuilderModifier
+class ExtraPropertiesBehaviorObjectBuilderModifier
 {
   protected $behavior, $table, $builder, $objectClassname, $peerClassname;
 
@@ -22,13 +22,13 @@ class PropelExtraPropertiesBehaviorObjectBuilderModifier
     $this->table = $behavior->getTable();
   }
 
-  protected function setBuilder($builder)
-  {
-    $this->builder = $builder;
-    $this->objectClassname = $builder->getStubObjectBuilder()->getClassname();
-    $this->queryClassname = $builder->getStubQueryBuilder()->getClassname();
-    $this->peerClassname = $builder->getStubPeerBuilder()->getClassname();
-  }
+	protected function setBuilder($builder)
+	{
+		$this->builder = $builder;
+		$this->objectClassname = $builder->getStubObjectBuilder()->getClassname();
+		$this->queryClassname = $builder->getStubQueryBuilder()->getClassname();
+		$this->peerClassname = $builder->getStubPeerBuilder()->getClassname();
+	}
 
   protected function getParameter($key)
   {
@@ -62,51 +62,49 @@ class PropelExtraPropertiesBehaviorObjectBuilderModifier
 
   protected function getPropertyObjectsColumn()
   {
-    $propertyTable = $this->behavior->getPropertyTable();
-    $fks = $propertyTable->getForeignKeysReferencingTable($this->table->getName());
-    $relCol = $this->builder->getRefFKPhpNameAffix($fks[0], $plural = true);
-
+		$propertyTable = $this->behavior->getPropertyTable();
+		$propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
+		$fks = $propertyTable->getForeignKeysReferencingTable($this->table->getName());
+		$relCol = $this->builder->getRefFKPhpNameAffix($fks[0], $plural = true);
     return sprintf('coll%s', ucfirst($relCol));
   }
 
   protected function getPropertyObjectsGetter()
   {
-    $propertyTable = $this->behavior->getPropertyTable();
-    $fks = $propertyTable->getForeignKeysReferencingTable($this->table->getName());
-    $relCol = $this->builder->getRefFKPhpNameAffix($fks[0], $plural = true);
-
+		$propertyTable = $this->behavior->getPropertyTable();
+		$propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
+		$fks = $propertyTable->getForeignKeysReferencingTable($this->table->getName());
+		$relCol = $this->builder->getRefFKPhpNameAffix($fks[0], $plural = true);
     return sprintf('get%s', ucfirst($relCol));
   }
 
   protected function getPropertyObjectsSetter()
   {
-    $propertyTable = $this->behavior->getPropertyTable();
-    $fks = $propertyTable->getForeignKeysReferencingTable($this->table->getName());
-    $relCol = $this->builder->getRefFKPhpNameAffix($fks[0], $plural = false);
-
+		$propertyTable = $this->behavior->getPropertyTable();
+		$propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
+		$fks = $propertyTable->getForeignKeysReferencingTable($this->table->getName());
+		$relCol = $this->builder->getRefFKPhpNameAffix($fks[0], $plural = false);
     return sprintf('add%s', ucfirst($relCol));
   }
 
   protected function getPropertyTableName()
   {
-    $propertyTable = $this->behavior->getPropertyTable();
-    $propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
-
+		$propertyTable = $this->behavior->getPropertyTable();
+		$propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
     return $propertyARClassname;
   }
 
   protected function getPropertyActiveRecordClassName()
   {
-    $propertyTable = $this->behavior->getPropertyTable();
-    $propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
-
+		$propertyTable = $this->behavior->getPropertyTable();
+		$propertyARClassname = $this->builder->getNewStubObjectBuilder($propertyTable)->getClassname();
     return $propertyARClassname;
   }
 
-  protected function getActiveRecordClassName()
-  {
-    return $this->builder->getStubObjectBuilder()->getClassname();
-  }
+	protected function getActiveRecordClassName()
+	{
+		return $this->builder->getStubObjectBuilder()->getClassname();
+	}
 
   public function objectAttributes($builder)
   {
@@ -118,12 +116,11 @@ class PropelExtraPropertiesBehaviorObjectBuilderModifier
 
   public function objectMethods($builder)
   {
-    $this->setBuilder($builder);
+		$this->setBuilder($builder);
     $script = $this->getCommonPropertyMethods();
     $script .= $this->getInitializePropertiesMethod();
     $script .= $this->getSinglePropertyRegistrationMethods();
     $script .= $this->getMultiplePropertyRegistrationMethods();
-
     return $script;
   }
 
@@ -131,7 +128,8 @@ class PropelExtraPropertiesBehaviorObjectBuilderModifier
   {
     $parser = new PropelPHPParser($script, true);
     $construct = $parser->findMethod('__construct');
-    if (!strlen($construct)) {
+    if (!strlen($construct))
+    {
       $construct = <<<EOF
 
 /**
@@ -145,7 +143,6 @@ public function __construct()
 EOF;
       $parser->addMethodBefore('initializeProperties', $construct);
     }
-
     $construct = $this->updateConstructFunctionWithInitialize($construct);
     $parser->replaceMethod('__construct', $construct);
     $script = $parser->getCode();
@@ -157,7 +154,7 @@ EOF;
 $1parent::__construct();
 $1\$this->initializeProperties();
 EOF
-      , $currentCode);
+    , $currentCode);
   }
 
   /**
@@ -215,6 +212,7 @@ public function getRegisteredSingleProperties()
  *
  * @param String  \$propertyName   the property name.
  * @param Mixed   \$defaultValue   default property value.
+ *
  * @return {$this->getActiveRecordClassName()}
  */
 public function registerProperty(\$propertyName, \$defaultValue = null)
@@ -236,16 +234,18 @@ public function registerProperty(\$propertyName, \$defaultValue = null)
  * If the property already exists, then it is ovverriden, ortherwise
  * new property is created.
  *
- * @param String  \$name   the property name.
- * @param Mixed   \$value  default property value.
+ * @param String    \$name   the property name.
+ * @param Mixed     \$value  default property value.
+ * @param PropelPDO \$con    Optional connection object
+ *
  * @return {$this->getActiveRecordClassName()}
  */
-public function setProperty(\$name, \$value)
+public function setProperty(\$name, \$value, PropelPDO \$con = null)
 {
   \$name = strtoupper(\$name);
-  if(\$this->hasProperty(\$name))
+  if(\$this->hasProperty(\$name, \$con))
   {
-    \$properties = \$this->{$this->getPropertyObjectsGetter()}();
+    \$properties = \$this->{$this->getPropertyObjectsGetter()}(null, \$con);
     foreach(\$properties as \$prop)
     {
       if(\$prop->{$this->getPropertyColumnGetter('property_name_column')}() == \$name)
@@ -268,13 +268,15 @@ public function setProperty(\$name, \$value)
 /**
  * Get the value of an extra property that can appear only once.
  *
- * @param   String  \$propertyName   the name of propertyto retrieve.
- * @param   Mixed   \$defaultValue   default value if property isn't set.
- * @return  Mixed.
+ * @param   String    \$propertyName   the name of propertyto retrieve.
+ * @param   Mixed     \$defaultValue   default value if property isn't set.
+ * @param   PropelPDO \$con            Optional connection object
+ *
+ * @return  Mixed
  */
-public function getProperty(\$propertyName, \$defaultValue = null)
+public function getProperty(\$propertyName, \$defaultValue = null, PropelPDO \$con = null)
 {
-  \$properties = \$this->{$this->getPropertyObjectsGetter()}();
+  \$properties = \$this->{$this->getPropertyObjectsGetter()}(null, \$con);
   \$propertyName = strtoupper(\$propertyName);
   foreach(\$properties as \$prop)
   {
@@ -299,6 +301,7 @@ EOF;
  * convert propertyname in method to property name
  *
  * @param String \$name the camelized property name
+ *
  * @return String
  */
 protected function extraPropertyNameFromMethod(\$name)
@@ -314,24 +317,29 @@ protected function extraPropertyNameFromMethod(\$name)
  * checks that the event defines a property with \$propertyName
  *
  * @todo optimize to make it stop on first occurence
- * @param String \$propertyName  nmae of the property to check.
+ *
+ * @param String    \$propertyName  name of the property to check.
+ * @param PropelPDO \$con           Optional connection object
+ *
  * @return Boolean
  */
-public function hasProperty(\$propertyName)
+public function hasProperty(\$propertyName, PropelPDO \$con = null)
 {
-  return \$this->countPropertiesByName(\$propertyName) > 0;
+  return \$this->countPropertiesByName(\$propertyName, \$con) > 0;
 }
 
 /**
  * Count the number of occurences of \$propertyName.
  *
- * @param   String  \$propertyName   the property to count.
+ * @param   String    \$propertyName   the property to count.
+ * @param   PropelPDO \$con            Optional connection object
+ *
  * @return  Integer
  */
-public function countPropertiesByName(\$propertyName)
+public function countPropertiesByName(\$propertyName, PropelPDO \$con = null)
 {
   \$count = 0;
-  \$properties = \$this->{$this->getPropertyObjectsGetter()}();
+  \$properties = \$this->{$this->getPropertyObjectsGetter()}(null, \$con);
   \$propertyName = strtoupper(\$propertyName);
   foreach(\$properties as \$prop)
   {
@@ -346,11 +354,14 @@ public function countPropertiesByName(\$propertyName)
 /**
  * Set the property with id \$id.
  * can only be used with an already set property
+ *
+ * @param   PropelPDO \$con Optional connection object
+ *
  * @return {$this->getActiveRecordClassName()}|false
  */
-protected function setPropertyById(\$id, \$value)
+protected function setPropertyById(\$id, \$value, PropelPDO \$con = null)
 {
-  \$prop = \$this->getPropertyObjectById(\$id);
+  \$prop = \$this->getPropertyObjectById(\$id, \$con);
   if(\$prop instanceof {$this->getPropertyTableName()})
   {
     \$prop->{$this->getPropertyColumnSetter('property_value_column')}(\$value);
@@ -365,13 +376,15 @@ protected function setPropertyById(\$id, \$value)
 /**
  * Retrive property objects with \$propertyName.
  *
- * @param   String  \$propertyName   the properties to look for.
+ * @param   String    \$propertyName the properties to look for.
+ * @param   PropelPDO \$con          Optional connection object
+ *
  * @return  Array
  */
-protected function getPropertiesObjectsByName(\$propertyName)
+protected function getPropertiesObjectsByName(\$propertyName, PropelPDO \$con = null)
 {
   \$ret = array();
-  \$properties = \$this->{$this->getPropertyObjectsGetter()}();
+  \$properties = \$this->{$this->getPropertyObjectsGetter()}(null, \$con);
   \$propertyName = strtoupper(\$propertyName);
   foreach(\$properties as \$prop)
   {
@@ -388,14 +401,16 @@ protected function getPropertiesObjectsByName(\$propertyName)
  * If property is not saved yet, id is the list index, created this way :
  * \$propertyName.'_'.\$index.
  *
- * @param Integer|String   \$id   the id of prorty to retrieve.
+ * @param Integer|String  \$id   the id of prorty to retrieve.
+ * @param PropelPDO       \$con  Optional connection object
+ *
  * @return {$this->getPropertyActiveRecordClassName()}
  */
-protected function getPropertyObjectById(\$id)
+protected function getPropertyObjectById(\$id, PropelPDO \$con = null)
 {
   if(is_numeric(\$id))
   {
-    \$properties = \$this->{$this->getPropertyObjectsGetter()}();
+    \$properties = \$this->{$this->getPropertyObjectsGetter()}(null, \$con);
     foreach(\$properties as \$prop)
     {
       if(\$prop->getId() == \$id)
@@ -407,32 +422,35 @@ protected function getPropertyObjectById(\$id)
   else
   {
     \$propertyName = substr(\$id, 0, strrpos(\$id, '_'));
-    \$properties = \$this->getPropertiesObjectsByName(\$propertyName);
+    \$properties = \$this->getPropertiesObjectsByName(\$propertyName, \$con);
     return \$properties[\$id];
   }
 }
 
 /**
  * Check wether property with \$id is
+ *
+ * @param PropelPDO \$con  Optional connection object
  */
-protected function isPropertyWithIdA(\$id, \$propertyName)
+protected function isPropertyWithIdA(\$id, \$propertyName, PropelPDO \$con = null)
 {
-  \$prop = \$this->getPropertyObjectById(\$id);
+  \$prop = \$this->getPropertyObjectById(\$id, \$con);
   return \$prop && \$prop->{$this->getPropertyColumnGetter('property_name_column')}() == strtoupper(\$propertyName);
 }
 
 /**
  * wrapped function on update{Property} callback
  *
- * @param string          \$name   the property to update's type
- * @param mixed           \$value  the new value
- * @param integer|string  \$id     the id of the property to update
+ * @param string          \$name  the property to update's type
+ * @param mixed           \$value the new value
+ * @param integer|string  \$id    the id of the property to update
+ * @param PropelPDO       \$con   Optional connection object
  *
  * @return Boolean|{$this->getPropertyActiveRecordClassName()}
  */
-protected function setPropertyByNameAndId(\$name, \$value, \$id)
+protected function setPropertyByNameAndId(\$name, \$value, \$id, PropelPDO \$con = null)
 {
-  if(\$this->isPropertyWithIdA(\$id, strtoupper(\$name)))
+  if(\$this->isPropertyWithIdA(\$id, strtoupper(\$name), \$con))
   {
     return \$this->setPropertyById(\$id, \$value);
   }
@@ -442,10 +460,12 @@ protected function setPropertyByNameAndId(\$name, \$value, \$id)
 /**
  * get the property with id \$id.
  * can only be used with an already set property
+ *
+ * @param PropelPDO \$con Optional connection object
  */
-protected function getPropertyById(\$id, \$defaultValue = null)
+protected function getPropertyById(\$id, \$defaultValue = null, PropelPDO \$con = null)
 {
-  \$prop = \$this->getPropertyObjectById(\$id);
+  \$prop = \$this->getPropertyObjectById(\$id, \$con);
   if(\$prop instanceof {$this->getPropertyActiveRecordClassName()})
   {
     return \$prop->{$this->getPropertyColumnGetter('property_value_column')}();
@@ -458,27 +478,31 @@ protected function getPropertyById(\$id, \$defaultValue = null)
 
 /**
  * wrapped function on deleteProperty callback
+ *
+ * @param PropelPDO \$con Optional connection object
  */
-protected function deletePropertyByNameAndId(\$name, \$id)
+protected function deletePropertyByNameAndId(\$name, \$id, PropelPDO \$con = null)
 {
-  if(\$this->isPropertyWithIdA(\$id, strtoupper(\$name)))
+  if(\$this->isPropertyWithIdA(\$id, strtoupper(\$name), \$con))
   {
-    return \$this->deletePropertyById(\$id);
+    return \$this->deletePropertyById(\$id, \$con);
   }
   return false;
 }
 
 /**
  * delete a multiple occurence property
+ *
+ * @param PropelPDO \$con  Optional connection object
  */
-protected function deletePropertyById(\$id)
+protected function deletePropertyById(\$id, PropelPDO \$con = null)
 {
-  \$prop = \$this->getPropertyObjectById(\$id);
+  \$prop = \$this->getPropertyObjectById(\$id, \$con);
   if(\$prop instanceof {$this->getPropertyActiveRecordClassName()})
   {
     if(!\$prop->isNew())
     {
-      \$prop->delete();
+      \$prop->delete(\$con);
     }
     \$this->{$this->getPropertyObjectsColumn()}->remove(\$this->{$this->getPropertyObjectsColumn()}->search(\$prop));
     return \$prop;
@@ -491,15 +515,17 @@ protected function deletePropertyById(\$id)
 
 /**
  * delete all properties with \$name
+ *
+ * @param PropelPDO \$con Optional connection object
  */
-public function deletePropertiesByName(\$name)
+public function deletePropertiesByName(\$name, PropelPDO \$con = null)
 {
-  \$props = \$this->getPropertiesObjectsByName(\$name);
+  \$props = \$this->getPropertiesObjectsByName(\$name, \$con);
   foreach(\$props as \$prop)
   {
     if(\$prop instanceof {$this->getPropertyActiveRecordClassName()})
     {
-      \$prop->delete();
+      \$prop->delete(\$con);
       \$this->{$this->getPropertyObjectsColumn()}->remove(\$this->{$this->getPropertyObjectsColumn()}->search(\$prop));
     }
   }
@@ -564,16 +590,17 @@ public function addProperty(\$propertyName, \$value)
  * @todo enhance the case an id is given
  * @todo check the case there is an id but does not exists
  *
- * @param string  \$propertyName     the name of properties to retrieve
- * @param mixed   \$default          the default value to use
- * @param Integer \$id               the unique id of the property to retrieve
+ * @param string    \$propertyName    the name of properties to retrieve
+ * @param mixed     \$default         The default value to use
+ * @param Integer   \$id              The unique id of the property to retrieve
+ * @param PropelPDO \$con             Optional connection object
  *
  * @return array  the list of matching properties (prop_id => value).
  */
-public function getPropertiesByName(\$propertyName, \$default = array(), \$id = null)
+public function getPropertiesByName(\$propertyName, \$default = array(), \$id = null, PropelPDO \$con = null)
 {
   \$ret = array();
-  \$properties = \$this->getPropertiesObjectsByName(\$propertyName);
+  \$properties = \$this->getPropertiesObjectsByName(\$propertyName, \$con);
   foreach(\$properties as \$key => \$prop)
   {
     \$ret[\$key] = \$prop->{$this->getPropertyColumnGetter('property_value_column')}();
@@ -596,7 +623,8 @@ EOF;
 
   public function objectCall()
   {
-    if (floatval(substr(Propel::VERSION, 0, 3)) >= 1.5) {
+    if(floatval(substr(Propel::VERSION,0,3)) >= 1.5)
+    {
       $methodVar = '$name';
       $paramVar = '$params';
     }
@@ -690,7 +718,7 @@ if(isset(\$propertyName))
   }
 
 }
-EOF;
+EOF
+    ;
   }
-
-}
+} // END OF ExtraPropertiesBehaviorObjectBuilderModifier
