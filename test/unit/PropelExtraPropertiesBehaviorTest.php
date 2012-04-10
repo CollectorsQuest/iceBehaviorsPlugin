@@ -186,9 +186,9 @@ EOF;
   {
     $obj = new ExtraPropertiesBehaviorTest1();
     $this->assertSame($obj, $obj->registerMultipleProperty('MY_FIRST_PROPERTY'));
-    $this->assertCount(0, $obj->getMyFirstPropertys());
-    $this->assertSame($obj, $obj->addMyFirstPropertys('foo'));
-    $properties = $obj->getMyFirstPropertys();
+    $this->assertCount(0, $obj->getMyFirstProperties());
+    $this->assertSame($obj, $obj->addMyFirstProperties('foo'));
+    $properties = $obj->getMyFirstProperties();
     $this->assertCount(1, $properties);
     $this->assertEquals('foo', $properties['MY_FIRST_PROPERTY_0']);
   }
@@ -199,18 +199,18 @@ EOF;
     // no conflict for declaration
     $this->assertSame($obj, $obj->registerMultipleProperty('MY_FIRST_PROPERTY', 'foo'));
     $this->assertSame($obj, $obj->registerMultipleProperty('MY_SECOND_PROPERTY', 'foo_bar'));
-    $this->assertCount(0, $obj->getMyFirstPropertys());
-    $this->assertCount(0, $obj->getMySecondPropertys());
+    $this->assertCount(0, $obj->getMyFirstProperties());
+    $this->assertCount(0, $obj->getMySecondProperties());
     // setter
     $obj->addMyFirstProperty('first_1');
     $obj->addMyFirstProperty('first_2');
     $obj->addMySecondProperty('second_1');
     $obj->addMySecondProperty('second_2');
-    $properties = $obj->getMyFirstPropertys();
+    $properties = $obj->getMyFirstProperties();
     $this->assertCount(2, $properties);
     $this->assertEquals('first_1', $properties['MY_FIRST_PROPERTY_0']);
     $this->assertEquals('first_2', $properties['MY_FIRST_PROPERTY_1']);
-    $properties = $obj->getMySecondPropertys();
+    $properties = $obj->getMySecondProperties();
     $this->assertCount(2, $properties);
     $this->assertEquals('second_1', $properties['MY_SECOND_PROPERTY_0']);
     $this->assertEquals('second_2', $properties['MY_SECOND_PROPERTY_1']);
@@ -224,11 +224,11 @@ EOF;
     $obj->addMyFirstProperty('test');
     $obj->addMyFirstProperty('test2');
     $obj->deleteMyFirstProperty('MY_FIRST_PROPERTY_0');
-    $properties = $obj->getMyFirstPropertys();
+    $properties = $obj->getMyFirstProperties();
     $this->assertCount(1, $properties);
     $this->assertEquals('test2', $properties['MY_FIRST_PROPERTY_0']);
-    $obj->clearMyFirstPropertys();
-    $this->assertCount(0, $obj->getMyFirstPropertys());
+    $obj->clearMyFirstProperties();
+    $this->assertCount(0, $obj->getMyFirstProperties());
   }
 
   public function testUseExistingPropertiesTable()
@@ -252,7 +252,7 @@ EOF;
     $beagle->setName('Beagle');
     $this->assertSame($beagle, $beagle->setProperty('color', 'brown'));
     $this->assertSame($beagle, $beagle->addProperty('length', '27.5m'));
-    $this->assertCount(2, $beagle->getProductExtraPropertys());
+    $this->assertCount(2, $beagle->getProductExtraProperties());
     $this->assertEquals('brown', $beagle->getProperty('color'));
     $this->assertCount(1, $beagle->getPropertiesByName('length'));
     $this->assertCount(1, $beagle->deletePropertiesByName('length'));
@@ -262,7 +262,7 @@ EOF;
       ->findOneByName('Beagle');
 
     $this->assertEquals('brown', $beagle->getProperty('color'));
-    $this->assertCount(1, $beagle->getProductExtraPropertys());
+    $this->assertCount(1, $beagle->getProductExtraProperties());
     $this->assertSame($beagle, $beagle->addProperty('length', '27.5m'));
     $beagle->save();
     $beagle = ProductQuery::create()
@@ -271,7 +271,7 @@ EOF;
 
     $this->assertEquals('brown', $beagle->getProperty('color'));
     $this->assertEquals('27.5m', $beagle->getProperty('length'));
-    $this->assertCount(2, $beagle->getProductExtraPropertys());
+    $this->assertCount(2, $beagle->getProductExtraProperties());
   }
 }
 
