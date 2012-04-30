@@ -705,13 +705,8 @@ if(isset(\$propertyName))
         break;
     }
   }
-  //* no error throw to make sure other behaviors can be called.
-  else
-  {
-    throw new RuntimeException(sprintf('Unknown property %s.<br />possible single properties: %s<br />possible multiple properties', \$propertyName, join(',', array_keys(\$this->extraProperties)), join(',', array_keys(\$this->multipleExtraProperties))));
-  }
-  //*/
-  if(isset(\$callable))
+
+  if (isset(\$callable))
   {
     array_unshift({$paramVar}, \$propertyName);
     return call_user_func_array(\$callable, {$paramVar});
