@@ -57,6 +57,7 @@ class PropelActAsSluggableBehavior
     $peer_name = get_class($node->getPeer());
     $node_class = get_class($node);
 
+    $getslug = self::forgeMethodName($node, 'get', 'to');
     $getter = self::forgeMethodName($node, 'get', 'from');
     $column = self::getColumnConstant($node_class, 'to');
 
@@ -75,14 +76,22 @@ class PropelActAsSluggableBehavior
     $conf_unique = sprintf('propel_behavior_PropelActAsSluggableBehavior_%s_unique', get_class($node));
     $unique = sfConfig::has($conf_unique) ? sfConfig::get($conf_unique) : true;
 
-    $slug = $new_slug = Utf8::slugify($node->$getter(), $separator, $lowercase, $ascii);
+    $conf_permanent = sprintf('propel_behavior_PropelActAsSluggableBehavior_%s_permanent', get_class($node));
+    $permanent = sfConfig::has($conf_permanent) ? sfConfig::get($conf_permanent) : true;
+
+    $old_slug = $node->$getslug();
+    $new_slug = $slug = Utf8::slugify($node->$getter(), $separator, $lowercase, $ascii);
 
     // Impose the char limit if specified
     if ($chars)
     {
       // The limit should be -7 chars because of the random string
       // we put in the end if the slug already exists
-      $slug = $new_slug = IceStatic::truncateText($slug, (int) $chars - 7, '', true);
+      $new_slug = $slug = IceStatic::truncateText($slug, (int) $chars - 7, '', true);
+    }
+
+    if (($old_slug && mb_substr($old_slug, 0, -7) === $slug) || $permanent) {
+      $new_slug = $old_slug;
     }
 
     if (method_exists($peer_name, 'disableSoftDelete'))
