@@ -90,7 +90,7 @@ class PropelActAsSluggableBehavior
       $new_slug = $slug = IceStatic::truncateText($slug, (int) $chars - 7, '', true);
     }
 
-    if (($old_slug && mb_substr($old_slug, 0, -7) === $slug) || $permanent) {
+    if ($old_slug && (mb_substr($old_slug, 0, -7) === $slug || $permanent)) {
       $new_slug = $old_slug;
     }
 
